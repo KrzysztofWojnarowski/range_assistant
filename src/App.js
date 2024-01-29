@@ -1,7 +1,10 @@
+import React from 'react';
 import { useState } from 'react';
+
 import './App.css';
 import { Flex, Button, Tabs, InputNumber } from 'antd';
 import ButtonGroup from 'antd/es/button/button-group';
+import { BarChart } from '@mui/x-charts/BarChart';
 
 function App() {
   const [inputMass, setInputMass] = useState(0);
@@ -43,13 +46,13 @@ function App() {
     return (
       <section>
         <Flex vertical gap="small" style={{ width: '100%' }}>
-          <h2>Black Powder Charges for Uberti Revolvers</h2>
+          <h2>Black Powder Charges</h2>
           <p>{chargeUberti} [Grain]</p>
-          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.31'])}>.31</Button>
-          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.36'])}>.36</Button>
-          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.36c'])}>.36 Conical</Button>
-          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.44'])}>.44</Button>
-          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.44c'])}>.44 Conical</Button>
+          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.31'])}>.31 Revolver</Button>
+          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.36'])}>.36 Revolver</Button>
+          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.36c'])}>.36 Conical Revolver</Button>
+          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.44'])}>.44 Revolver</Button>
+          <Button block type='default' onClick={() => setChargeUberti(revolverChargesUberti['.44c'])}>.44 Conical Revolver</Button>
         </Flex>
       </section>
     )
@@ -74,8 +77,6 @@ function App() {
     setConvertedMass(grainToGram(inputMass));
     setUnit("Gram");
   }
-
-
 
   function addScore(i) {
     let cs = currentSeries.scores;
@@ -131,21 +132,22 @@ function App() {
     </div>);
   }
 
-
   function series(){
     return(<section>
       <h2>Shooting log</h2>
+      <ButtonGroup>
       <Button type='default' onClick={createNewSeries}>New series</Button>
-      <Button type='default'>Clear series</Button>
+      <Button type='default' onClick={()=>setCurrentSeries({ scores: [], seriesNo: serieNo })}>Clear current </Button>
+      <Button type='default' onClick={()=>setSeriesGroup([])}>Clear All </Button>
+      </ButtonGroup>
       <p>Series {serieNo}</p>
-      <p>Last series average {avereageLastSeries.toFixed(2)}</p>
-      <p>Last series deviation {deviationLastSeries.toFixed(2)}</p>
       <h2>Score</h2>
-      <p>{scoreAdded}</p>
+      <p>{currentSeries.scores.join(" | ")||"N/A"}</p>
       <Flex wrap="wrap" gap="middle">
         {scoreButtons}
       </Flex>
       {showSeriesLog()}
+      
     </section>);
   }
 
@@ -153,26 +155,62 @@ function App() {
     const tabItems = [
       {
         key: '1',
-        label: 'Unit Conversion',
+        label: 'Units',
         children: unitConversion(),
       },
       {
         key: '2',
-        label: 'Uberti charges',
+        label: 'Charges',
         children: ubertiCharges(),
       },
       {
         key: '3',
-        label: 'Shooting Log',
+        label: 'Log',
         children: series(),
       },
+      {
+        key: '4',
+        label: 'Chart',
+        children: chartsTab(),
+      },
+      
     ];
   
+    function seriesToChartData(series){
+      let chartData =new Array(11).fill(0);
+      
+      series.scores.forEach(i=>{
+       chartData[i]++;
+      });
+      return chartData;
+
+    }
+    function overallChartData(){
+      let chartData =new Array(11).fill(0);
+      seriesGroup.forEach(serie=>{
+        serie.scores.forEach(s=>chartData[s]++);
+      });
+      return chartData;
+    }
+
+    function chartsTab(){
+   //   const data = seriesToChartData(currentSeries);
+      const data = overallChartData();
+      const s = new Array(11).fill(0).map((i,j)=>j);
+      return(
+        <BarChart
+        xAxis={[{ scaleType: 'band', data: s }]}
+        series={[{ data:data }]}
+        width={300}
+        height={200}
+      />
+      )
+    }
 
 
 
   return (
-    <div className="App">
+    <div className="App" style={{padding:"5px"}}>
       <header>
         <h1>Range assistant</h1>
 
